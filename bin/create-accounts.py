@@ -22,8 +22,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import sys
-import requests
 import os
+import requests
 import shutil
 import subprocess
 
@@ -125,13 +125,16 @@ def extract_email(projects, name, surname, last_project):
                     return u['mail']
 
 
+def load_usercache(file):
+    pass
+
 def main():
     lobj = Logger(sys.argv[0])
     logger = lobj.get()
 
     cdb = conf_opts['settings']['cache']
 
-    parser = argparse.ArgumentParser(description="isabella-users-frontend update users DB")
+    parser = argparse.ArgumentParser(description="ec3-cloud-users update users DB")
     parser.add_argument('-d', required=False, help='SQLite DB file', dest='sql')
     parser.add_argument('-v', required=False, default=False,
                         action='store_true', help='Verbose', dest='verbose')
@@ -147,6 +150,7 @@ def main():
     session = Session()
 
     usertool = UserUtils(logger)
+    import pdb; pdb.set_trace()
 
     # fetch projects feed data as it is needed for email extraction
     projects = fetch_projects(conf_opts['external']['subscription'], logger)
@@ -227,17 +231,6 @@ def main():
         if r:
             u.issentemail = True
             logger.info('Mail sent for %s' % u.username)
-    session.commit()
-
-    # subscribe opened user account to mailing list
-    not_subscribed = session.query(User).filter(User.issubscribe == False).all()
-    for u in not_subscribed:
-        token = conf_opts['external']['mailinglisttoken']
-        listname = conf_opts['external']['mailinglistname']
-        r = subscribe_maillist(token, listname, u.email, u.username, logger)
-        if r:
-            u.issubscribe = True
-            logger.info('User %s subscribed to %s' % (u.username, listname))
     session.commit()
 
 
