@@ -212,23 +212,24 @@ def main():
         u.ispasswordset = True
     session.commit()
 
-    # send email to user whose account is opened
-    not_email = session.query(User).filter(User.issentemail == False).all()
-    for u in not_email:
-        templatepath = conf_opts['external']['emailtemplate']
-        smtpserver = conf_opts['external']['emailsmtp']
-        emailfrom = conf_opts['external']['emailfrom']
-        emailsubject = conf_opts['external']['emailsubject']
-        email = extract_email(projects, u.name, u.surname, u.last_project)
-        u.email = email
+    if conf_opts['external']['sendemail']:
+        # send email to user whose account is opened
+        not_email = session.query(User).filter(User.issentemail == False).all()
+        for u in not_email:
+            templatepath = conf_opts['external']['emailtemplate']
+            smtpserver = conf_opts['external']['emailsmtp']
+            emailfrom = conf_opts['external']['emailfrom']
+            emailsubject = conf_opts['external']['emailsubject']
+            email = extract_email(projects, u.name, u.surname, u.last_project)
+            u.email = email
 
-        e = InfoAccOpen(u.username, u.password, templatepath, smtpserver,
-                        emailfrom, email, emailsubject, logger)
-        r = e.send()
-        if r:
-            u.issentemail = True
-            logger.info('Mail sent for %s' % u.username)
-    session.commit()
+            e = InfoAccOpen(u.username, u.password, templatepath, smtpserver,
+                            emailfrom, email, emailsubject, logger)
+            r = e.send()
+            if r:
+                u.issentemail = True
+                logger.info('Mail sent for %s' % u.username)
+        session.commit()
 
 
 if __name__ == '__main__':
