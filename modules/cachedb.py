@@ -30,7 +30,7 @@ class User(Base):
 
     def __init__(self, username, name, surname, email, shell, homedir, password,
                  uid, gid, issubscribe, ispasswordset, ishomecreated,
-                 issgeadded,  issentemail, date_created, status, project,
+                 issgeadded, issentemail, date_created, status, project,
                  last_project):
         self.username = username
         self.name = name

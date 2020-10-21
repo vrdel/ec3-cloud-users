@@ -185,25 +185,6 @@ def main():
             logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
     session.commit()
 
-    # update SGE projects for users
-    # TODO: support for deletion user from SGE projects
-    update_sge = session.query(User).filter(User.project != User.last_project).all()
-    for u in update_sge:
-        if u.last_project:
-            sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
-            try:
-                os.chdir(os.path.dirname(sgecreateuser_cmd))
-                subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
-                                                           u.username,
-                                                           u.last_project),
-                                      shell=True, bufsize=512)
-                u.project = u.last_project
-                logger.info('User %s updated to SGE project %s' % (u.username, u.last_project))
-
-            except Exception as e:
-                logger.error('Failed updating user %s to SGE: %s' % (u.username, str(e)))
-    session.commit()
-
     # set password for opened user accounts
     not_password = session.query(User).filter(User.ispasswordset is False).all()
     for u in not_password:
