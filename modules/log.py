@@ -9,7 +9,7 @@ class Logger(object):
        Logger objects with initialized File and Syslog logger.
     """
     logger = None
-    logfile = '/var/log/isabella-users-frontend/users.log'
+    logfile = '/var/log/ec3-cloud-users/actions.log'
 
     def _init_stdout(self):
         lfs = '%(levelname)s ' + self._caller + ' - %(message)s'
