@@ -1,12 +1,28 @@
-CREATE TABLE users
-(
-    user_id INTEGER PRIMARY KEY,
-    username TEXT,
-    home INTEGER,
-    pass INTEGER,
-    passvalue TEXT,
-    sge INTEGER,
-    email INTEGER
+CREATE TABLE users (
+        id INTEGER NOT NULL,
+        username VARCHAR(8),
+        name VARCHAR(20),
+        surname VARCHAR(40),
+        email VARCHAR(60),
+        shell VARCHAR(15),
+        homedir VARCHAR(15),
+        password VARCHAR(60),
+        uid INTEGER,
+        gid INTEGER,
+        issubscribe BOOLEAN,
+        ispasswordset BOOLEAN,
+        ishomecreated BOOLEAN,
+        issgeadded BOOLEAN,
+        issentemail BOOLEAN,
+        date_created DATE,
+        status INTEGER,
+        project VARCHAR(40),
+        last_project VARCHAR(40),
+        PRIMARY KEY (id),
+        CHECK (issubscribe IN (0, 1)),
+        CHECK (ispasswordset IN (0, 1)),
+        CHECK (ishomecreated IN (0, 1)),
+        CHECK (issgeadded IN (0, 1)),
+        CHECK (issentemail IN (0, 1))
 );
-
 CREATE INDEX idx_users_name ON users(username);
