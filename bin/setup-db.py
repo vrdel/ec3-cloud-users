@@ -6,10 +6,10 @@ __requires__.append('SQLAlchemy >= 0.8.2')
 import pkg_resources
 pkg_resources.require(__requires__)
 
-from isabella_users_frontend.cachedb import Base, User
-from isabella_users_frontend.config import parse_config
-from isabella_users_frontend.log import Logger
-from isabella_users_frontend.userutils import UserUtils
+from ec3_cloud_users.cachedb import Base, User
+from ec3_cloud_users.config import parse_config
+from ec3_cloud_users.log import Logger
+from ec3_cloud_users.userutils import UserUtils
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

@@ -8,10 +8,10 @@ pkg_resources.require(__requires__)
 
 import argparse
 
-from isabella_users_frontend.cachedb import User
-from isabella_users_frontend.userutils import UserUtils
-from isabella_users_frontend.log import Logger
-from isabella_users_frontend.config import parse_config
+from ec3_cloud_users.cachedb import User
+from ec3_cloud_users.userutils import UserUtils
+from ec3_cloud_users.log import Logger
+from ec3_cloud_users.config import parse_config
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
