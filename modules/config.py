@@ -2,7 +2,7 @@ import ConfigParser
 import sys
 import os
 
-conf = '/etc/isabella-users-frontend/frontend.conf'
+conf = '/etc/ec3-cloud-users/frontend.conf'
 
 def parse_config(logger=None):
     confopts = dict()
@@ -13,10 +13,9 @@ def parse_config(logger=None):
             for section in config.sections():
                 if section.startswith('external'):
                     confopts['external'] = ({'subscription': config.get(section, 'subscription')})
-                    confopts['external'].update({'projects': config.get(section, 'projects')})
-                    confopts['external'].update({'mailinglist': config.get(section, 'mailinglist')})
-                    confopts['external'].update({'mailinglisttoken': config.get(section, 'mailinglisttoken')})
-                    confopts['external'].update({'mailinglistname': config.get(section, 'mailinglistname')})
+                    confopts['external'].update({'sendemail': config.get(section, 'sendemail')})
+                    confopts['external'].update({'ipaddress': config.get(section, 'ipaddress')})
+                    confopts['external'].update({'project': config.get(section, 'project')})
                     confopts['external'].update({'emailfrom': config.get(section, 'emailfrom')})
                     confopts['external'].update({'emailsubject': config.get(section, 'emailsubject')})
                     confopts['external'].update({'emailsmtp': config.get(section, 'emailsmtp')})
@@ -28,14 +27,13 @@ def parse_config(logger=None):
                             sys.stderr.write('%s does not exist\n' % confopts['external']['emailtemplate'])
                         raise SystemExit(1)
 
-
                 if section.startswith('settings'):
                     confopts['settings'] = {'gid': long(config.get(section, 'gid'))}
 
-                    sharedpath = config.get(section, 'sharedpath')
-                    if not sharedpath.endswith('/'):
-                        sharedpath = sharedpath + '/'
-                    confopts['settings'].update({'sharedpath': sharedpath})
+                    homepath = config.get(section, 'homepath')
+                    if not homepath.endswith('/'):
+                        homepath = homepath + '/'
+                    confopts['settings'].update({'homepath': homepath})
 
                     skeletonpath = config.get(section, 'skeletonpath')
                     if not skeletonpath.endswith('/'):
@@ -59,13 +57,6 @@ def parse_config(logger=None):
 
                     cache = config.get(section, 'cache')
                     confopts['settings'].update({'cache': cache})
-                    if not os.path.exists(confopts['settings']['cache']):
-                        if logger:
-                            logger.error('%s does not exist' % confopts['settings']['cache'])
-                        else:
-                            sys.stderr.write('%s does not exist\n' % confopts['settings']['cache'])
-                        raise SystemExit(1)
-
             return confopts
 
         else:
