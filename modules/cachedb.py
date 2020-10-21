@@ -26,7 +26,6 @@ class User(Base):
     date_created = Column(Date)
     status = Column(Integer)
     project = Column(Unicode(40))
-    last_project = Column(Unicode(40))
 
     def __init__(self, username, name, surname, email, shell, homedir, password,
                  uid, gid, issubscribe, ispasswordset, ishomecreated,

@@ -70,12 +70,17 @@ def concat(s):
     return s
 
 
+def str_iterable(s):
+    return ', '.join(s)
+
+
 def main():
     lobj = Logger(sys.argv[0])
     logger = lobj.get()
 
     cachedb = conf_opts['settings']['cache']
     targetproject = conf_opts['external']['project']
+    newusers = []
 
     parser = argparse.ArgumentParser(description="ec3-cloud-users sync DB")
     parser.add_argument('-d', required=False, help='SQLite DB file', dest='sql')
@@ -85,7 +90,6 @@ def main():
 
     data = fetch_feeddata(conf_opts['external']['subscription'], logger)
 
-    logger.info('Fetched %d projects' % len(data))
 
     if args.sql:
         cachedb = args.sql
@@ -99,6 +103,7 @@ def main():
     for project in data:
         # skip projects that have not been accepted yet or are HTC only
         if project['sifra'] == targetproject:
+            logger.info('Fetched project = %s' % project['sifra'])
             allusersdb = session.query(User).all()
             usersdb = set([ue.uid - 1000 for ue in allusersdb])
             usersfeed = list()
@@ -113,8 +118,9 @@ def main():
                 feedsurname = concat(unidecode(userfeed['prezime']))
                 feedemail = userfeed['mail']
 
+                username = gen_username(feedname, feedsurname, allusernames)
                 u = User(
-                    username=gen_username(feedname, feedsurname, allusernames),
+                    username=username,
                     name=feedname, surname=feedsurname, email=feedemail, shell=None,
                     homedir=None, password=None,
                     uid=userfeed['id'] + 1000, gid=100,
@@ -124,9 +130,15 @@ def main():
                     status=int(userfeed['status_id']),
                     project=project['sifra'],
                 )
-            session.add(u)
+                newusers.append(u)
 
-    session.commit()
+    if newusers:
+        logger.info("New users added into DB: %s" %
+                    str_iterable([user.username for user in newusers]))
+        session.add_all(newusers)
+        session.commit()
+    else:
+        logger.info("Cache up to date")
 
 
 if __name__ == '__main__':
