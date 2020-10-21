@@ -17,7 +17,6 @@ CREATE TABLE users (
         date_created DATE,
         status INTEGER,
         project VARCHAR(40),
-        last_project VARCHAR(40),
         PRIMARY KEY (id),
         CHECK (issubscribe IN (0, 1)),
         CHECK (ispasswordset IN (0, 1)),
