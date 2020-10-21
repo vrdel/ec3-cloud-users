@@ -30,11 +30,6 @@ def parse_config(logger=None):
                 if section.startswith('settings'):
                     confopts['settings'] = {'gid': config.getint(section, 'gid')}
 
-                    homepath = config.get(section, 'homepath')
-                    if not homepath.endswith('/'):
-                        homepath = homepath + '/'
-                    confopts['settings'].update({'homepath': homepath})
-
                     skeletonpath = config.get(section, 'skeletonpath')
                     if not skeletonpath.endswith('/'):
                         skeletonpath = skeletonpath + '/'

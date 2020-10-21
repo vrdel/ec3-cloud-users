@@ -159,17 +159,14 @@ def main():
         logger.error('Could not fetch projects and users')
         raise SystemExit(1)
 
-    # create /home and /shared directories for user
+    # create /home directories for user
     not_home = session.query(User).filter(User.ishomecreated == False).all()
     for u in not_home:
-        if (os.path.exists(u.homedir) and
-            os.path.exists(conf_opts['settings']['sharedpath'])):
-            rh, rs = True, True
+        if (os.path.exists(u.homedir)):
+            rh = True
         else:
             rh = create_homedir(u.homedir, u.uid, u.gid, logger)
-            sharedpath = conf_opts['settings']['sharedpath']
-            rs = create_shareddir(sharedpath + u.username, u.uid, u.gid, logger)
-        if all([rh, rs]):
+        if rh is True:
             u.ishomecreated = True
             logger.info('Created directories for %s' % u.username)
     session.commit()
