@@ -13,27 +13,22 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from unidecode import unidecode
 
-from ec3_cloud_users.cachedb import Base, User, Projects
+from ec3_cloud_users.cachedb import Base, User
 from ec3_cloud_users.config import parse_config
 from ec3_cloud_users.log import Logger
 
 import argparse
 import requests
 import sys
-import re
-import json
 
 connection_timeout = 120
 conf_opts = parse_config()
 
 
 def fetch_feeddata(subscription, logger):
-    statuses_users = dict()
-
     try:
         response = requests.get(subscription, timeout=connection_timeout, verify=False)
         response.raise_for_status()
-        projects = response.json()
 
         return response.json()
 
@@ -80,6 +75,7 @@ def main():
     logger = lobj.get()
 
     cachedb = conf_opts['settings']['cache']
+    targetproject = conf_opts['external']['project']
 
     parser = argparse.ArgumentParser(description="ec3-cloud-users sync DB")
     parser.add_argument('-d', required=False, help='SQLite DB file', dest='sql')
@@ -88,7 +84,6 @@ def main():
     args = parser.parse_args()
 
     data = fetch_feeddata(conf_opts['external']['subscription'], logger)
-    import ipdb; ipdb.set_trace()
 
     logger.info('Fetched %d projects' % len(data))
 
@@ -103,78 +98,33 @@ def main():
 
     for project in data:
         # skip projects that have not been accepted yet or are HTC only
-        if int(project['status_id']) > 1 or int(project['htc']) > 1:
-            continue
-        idproj = project['sifra']
-        try:
-            p = session.query(Projects).filter(Projects.idproj == idproj).one()
-            # update project timeline to most recent one as it is needed if
-            # project is prolong
-            p.date_from = datetime.strptime(project['date_from'], '%Y-%m-%d')
-            p.date_to = datetime.strptime(project['date_to'], '%Y-%m-%d')
-        except NoResultFound:
-            p = Projects(feedid=project['id'], idproj=idproj,
-                         respname='', respemail='', institution='', name='',
-                         date_from=datetime.strptime(project['date_from'], '%Y-%m-%d'),
-                         date_to=datetime.strptime(project['date_to'], '%Y-%m-%d'),
-                         date_created=datetime.now(),
-                         status=int(project['status_id']))
+        if project['sifra'] == targetproject:
+            allusersdb = session.query(User).all()
+            usersdb = set([ue.uid - 1000 for ue in allusersdb])
+            usersfeed = list()
+            diff = set()
+            usersfeed = set([int(uf['id']) for uf in project['users']])
+            diff = usersfeed.difference(usersdb)
 
-        usersdb = set([(concat(ue.name), concat(ue.surname)) for ue in p.users])
-        usersfeed = list()
-        diff = set()
-        users = project.get('users', None)
-        if users:
-            usersfeed = set([(concat(unidecode(uf['ime'])), concat(unidecode(uf['prezime']))) for uf in users])
-            diff = usersdb.difference(usersfeed)
+            allusernames = set([user.username for user in allusersdb])
+            for user in diff:
+                userfeed = filter(lambda u: user == u['id'], project['users'])[0]
+                feedname = concat(unidecode(userfeed['ime']))
+                feedsurname = concat(unidecode(userfeed['prezime']))
+                feedemail = userfeed['mail']
 
-        allusernames = set([username[0] for username in session.query(User.username).all()])
-        for user in users:
-            u_dup = None
-            feedname = concat(unidecode(user['ime']))
-            feedsurname = concat(unidecode(user['prezime']))
-            feeduid = user['uid']
-            feedemail = user['mail']
-
-            # lookup first by uid
-            try:
-                u = session.query(User).filter(User.feeduid == feeduid).one()
-                u.mail = feedemail
-                u.name = feedname
-                u.surname = feedsurname
-            except NoResultFound:
-                try:
-                    # uid not found, lookup by name and surname
-                    u = session.query(User).filter(
-                        and_(User.name == feedname,
-                             User.surname == feedsurname)).one()
-                    # if found, but with different uid - we have a duplicate
-                    if u.feeduid != feeduid:
-                        u_dup = User(feedid=user['id'],
-                                     username=gen_username(feedname,
-                                                           feedsurname,
-                                                           allusernames),
-                                     name=feedname, surname=feedsurname,
-                                     feeduid=feeduid, mail=feedemail,
-                                     date_join=datetime.now(),
-                                     status=int(user['status_id']),
-                                     last_project='')
-                    else:
-                        u.mail = feedemail
-                except NoResultFound:
-                    u = User(feedid=user['id'], username=gen_username(feedname, feedsurname, allusernames),
-                             name=feedname, surname=feedsurname, feeduid=feeduid, mail=feedemail,
-                             date_join=datetime.now(),
-                             status=int(user['status_id']), last_project='')
-            if u_dup:
-                p.users.extend([u, u_dup])
-            else:
-                p.users.extend([u])
-        if diff:
-            for ud in diff:
-                u = session.query(User).filter(and_(User.name == ud[0], User.surname == ud[1])).one()
-                p.users.remove(u)
-        session.add(p)
+                u = User(
+                    username=gen_username(feedname, feedsurname, allusernames),
+                    name=feedname, surname=feedsurname, email=feedemail, shell=None,
+                    homedir=None, password=None,
+                    uid=userfeed['id'] + 1000, gid=100,
+                    issubscribe=0, ispasswordset=0, ishomecreated=0,
+                    issgeadded=0, issentemail=0,
+                    date_created=datetime.now(),
+                    status=int(userfeed['status_id']),
+                    project=project['sifra'],
+                )
+            session.add(u)
 
     session.commit()
 
