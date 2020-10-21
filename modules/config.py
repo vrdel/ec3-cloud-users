@@ -13,7 +13,7 @@ def parse_config(logger=None):
             for section in config.sections():
                 if section.startswith('external'):
                     confopts['external'] = ({'subscription': config.get(section, 'subscription')})
-                    confopts['external'].update({'sendemail': config.get(section, 'sendemail')})
+                    confopts['external'].update({'sendemail': config.getboolean(section, 'sendemail')})
                     confopts['external'].update({'ipaddress': config.get(section, 'ipaddress')})
                     confopts['external'].update({'project': config.get(section, 'project')})
                     confopts['external'].update({'emailfrom': config.get(section, 'emailfrom')})
@@ -28,7 +28,7 @@ def parse_config(logger=None):
                         raise SystemExit(1)
 
                 if section.startswith('settings'):
-                    confopts['settings'] = {'gid': long(config.get(section, 'gid'))}
+                    confopts['settings'] = {'gid': config.getint(section, 'gid')}
 
                     homepath = config.get(section, 'homepath')
                     if not homepath.endswith('/'):
