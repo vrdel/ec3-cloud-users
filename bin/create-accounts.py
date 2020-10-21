@@ -125,9 +125,6 @@ def extract_email(projects, name, surname, last_project):
                     return u['mail']
 
 
-def load_usercache(file):
-    pass
-
 def main():
     lobj = Logger(sys.argv[0])
     logger = lobj.get()
@@ -160,7 +157,7 @@ def main():
         raise SystemExit(1)
 
     # create /home directories for user
-    not_home = session.query(User).filter(User.ishomecreated == False).all()
+    not_home = session.query(User).filter(User.ishomecreated is False).all()
     for u in not_home:
         if (os.path.exists(u.homedir)):
             rh = True
@@ -172,12 +169,14 @@ def main():
     session.commit()
 
     # add users to SGE projects
-    not_sge = session.query(User).filter(User.issgeadded == False).all()
+    not_sge = session.query(User).filter(User.issgeadded is False).all()
     for u in not_sge:
         sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
         try:
             os.chdir(os.path.dirname(sgecreateuser_cmd))
-            subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd, u.username, u.last_project),
+            subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
+                                                       u.username,
+                                                       u.last_project),
                                   shell=True, bufsize=512)
             u.issgeadded = True
             logger.info('User %s added in SGE project %s' % (u.username, u.last_project))
@@ -194,8 +193,10 @@ def main():
             sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
             try:
                 os.chdir(os.path.dirname(sgecreateuser_cmd))
-                subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd, u.username, u.last_project),
-                                    shell=True, bufsize=512)
+                subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
+                                                           u.username,
+                                                           u.last_project),
+                                      shell=True, bufsize=512)
                 u.project = u.last_project
                 logger.info('User %s updated to SGE project %s' % (u.username, u.last_project))
 
@@ -204,7 +205,7 @@ def main():
     session.commit()
 
     # set password for opened user accounts
-    not_password = session.query(User).filter(User.ispasswordset == False).all()
+    not_password = session.query(User).filter(User.ispasswordset is False).all()
     for u in not_password:
         password = gen_password()
         u.password = password
@@ -214,7 +215,7 @@ def main():
 
     if conf_opts['external']['sendemail']:
         # send email to user whose account is opened
-        not_email = session.query(User).filter(User.issentemail == False).all()
+        not_email = session.query(User).filter(User.issentemail is False).all()
         for u in not_email:
             templatepath = conf_opts['external']['emailtemplate']
             smtpserver = conf_opts['external']['emailsmtp']
