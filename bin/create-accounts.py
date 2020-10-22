@@ -125,7 +125,7 @@ def main():
                                                            u.project),
                                       shell=True, bufsize=512)
                 u.issgeadded = True
-                logger.info('User %s added in SGE project %s' % (u.username, u.last_project))
+                logger.info('User %s added in SGE project %s' % (u.username, u.project))
 
             except Exception as e:
                 logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
