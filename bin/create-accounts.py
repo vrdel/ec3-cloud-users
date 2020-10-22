@@ -65,41 +65,42 @@ def main():
     allusers_passwd = set(usertool.all_users_list())
     allusers_db = set([u['username'] for u in cache['users']])
     diff = allusers_db.difference(allusers_passwd)
-    import ipdb; ipdb.set_trace()
 
     # create user account (entries in /etc/passwd)
     for user in diff:
-        userdb = session.query(User).filter(User.username == user).one()
-        iscreated = usertool.add_user(user, userdb.uid, userdb.gid,
-                                      userdb.name, userdb.surname,
-                                      userdb.project)
+        userdb = filter(lambda u: u['username'] == user, cache['users'])[0]
+        iscreated = usertool.add_user(user, userdb['uid'], userdb['gid'],
+                                      userdb['name'], userdb['surname'],
+                                      userdb['project'])
         if iscreated:
             logger.info('Created user account for %s' % user)
         else:
             logger.error('Problem creating user account for %s' % user)
 
     # set password for opened user accounts
-    not_password = session.query(User).filter(User.ispasswordset == False).all()
+    not_password = filter(lambda u: u['ispasswordset'] == False, cache['users'])
     for u in not_password:
         password = gen_password()
-        u.password = password
-        usertool.set_user_pass(usertool.get_user(u.username), password)
-        u.ispasswordset = True
-        logger.info('Set password for %s' % u.username)
-    session.commit()
+        u['password'] = password
+        usertool.set_user_pass(usertool.get_user(u['username']), password)
+        u['ispasswordset'] = True
+        logger.info('Set password for %s' % u['username'])
+    if not_password:
+        update(cdb, cache, logger)
 
     if conf_opts['settings']['createhome']:
         # create /home directories for user
-        not_home = session.query(User).filter(User.ishomecreated == False).all()
+        not_home = filter(lambda u: u['ishomecreated'] == False, cache['users'])
         for u in not_home:
-            if (os.path.exists(u.homedir)):
+            if (os.path.exists(u['homedir'])):
                 rh = True
             else:
-                rh = create_homedir(u.homedir, u.uid, u.gid, logger)
+                rh = create_homedir(u['homedir'], u['uid'], u['gid'], logger)
             if rh is True:
-                u.ishomecreated = True
-                logger.info('Created home directory for %s' % u.username)
-        session.commit()
+                u['ishomecreated'] = True
+                logger.info('Created home directory for %s' % u['username'])
+            if not_home:
+                update(cdb, cache, logger)
 
     if conf_opts['settings']['associatesgeproject']:
         # add users to SGE projects
