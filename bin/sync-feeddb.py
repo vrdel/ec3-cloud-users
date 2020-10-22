@@ -20,6 +20,9 @@ from ec3_cloud_users.log import Logger
 import argparse
 import requests
 import sys
+import json
+import errno
+
 
 connection_timeout = 120
 conf_opts = parse_config()
@@ -74,6 +77,37 @@ def str_iterable(s):
     return ', '.join(s)
 
 
+def update_cache_json(cache, newusers, logger):
+    try:
+        with open(cache, mode='w') as fp:
+            json.dump(newusers, fp, indent=4)
+
+    except IOError as exc:
+        logger.error('Error opening cache')
+        logger.error(exc)
+        raise SystemExit(1)
+
+
+def load_cache_json(cache, logger):
+    try:
+        with open(cache, mode='r') as fp:
+            return json.loads(fp.read())
+
+    except IOError as exc:
+        if exc.errno == errno.ENOENT:
+
+            logger.info('Creating %s for first time' % cache)
+            emptyusers = {'users': []}
+
+            with open(cache, mode='w+') as fp:
+                json.dump(emptyusers, fp, indent=4)
+
+            return emptyusers
+        else:
+            logger.error(exc)
+            raise SystemExit(1)
+
+
 def main():
     lobj = Logger(sys.argv[0])
     logger = lobj.get()
@@ -90,21 +124,17 @@ def main():
 
     data = fetch_feeddata(conf_opts['external']['subscription'], logger)
 
-
     if args.sql:
         cachedb = args.sql
 
-    engine = create_engine('sqlite:///%s' % cachedb, echo=args.verbose)
-
-    Session = sessionmaker()
-    Session.configure(bind=engine)
-    session = Session()
+    # engine = create_engine('sqlite:///%s' % cachedb, echo=args.verbose)
+    cache = load_cache_json(cachedb, logger)
 
     for project in data:
         # skip projects that have not been accepted yet or are HTC only
         if project['sifra'] == targetproject:
             logger.info('Fetched project = %s' % project['sifra'])
-            allusersdb = session.query(User).all()
+            allusersdb = cache['users']
             usersdb = set([ue.uid - 1000 for ue in allusersdb])
             usersfeed = list()
             diff = set()
@@ -119,24 +149,24 @@ def main():
                 feedemail = userfeed['mail']
 
                 username = gen_username(feedname, feedsurname, allusernames)
-                u = User(
+                u = dict(
                     username=username,
                     name=feedname, surname=feedsurname, email=feedemail, shell=None,
                     homedir='/home/{}'.format(username), password=None,
                     uid=userfeed['id'] + 1000, gid=100,
                     issubscribe=0, ispasswordset=0, ishomecreated=0,
                     issgeadded=0, issentemail=0,
-                    date_created=datetime.now(),
+                    date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
                     status=int(userfeed['status_id']),
                     project=project['sifra'],
                 )
                 newusers.append(u)
 
     if newusers:
-        logger.info("New users added into DB: %s" %
-                    str_iterable([user.username for user in newusers]))
-        session.add_all(newusers)
-        session.commit()
+        logger.info("New users added into cache: %s" %
+                    str_iterable([user['username'] for user in newusers]))
+        cache['users'].append(newusers)
+        update_cache_json(cachedb, cache, logger)
     else:
         logger.info("Cache up to date")
 
