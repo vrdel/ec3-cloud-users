@@ -31,70 +31,10 @@ connection_timeout = 120
 conf_opts = parse_config()
 
 
-def subscribe_maillist(token, name, email, username, logger):
-    try:
-        headers, payload = dict(), dict()
-
-        headers = requests.utils.default_headers()
-        headers.update({'content-type': 'application/x-www-form-urlencoded'})
-        headers.update({'x-auth-token': token})
-        payload = "list={0}&email={1}".format(name, email)
-
-        response = requests.post(conf_opts['external']['mailinglist'],
-                                 headers=headers, data=payload, timeout=connection_timeout)
-        response.raise_for_status()
-
-        return True
-
-    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-        logger.error('Failed subscribing user %s on %s: %s' % (username, name,
-                                                               str(e)))
-        return False
-
-
-def fetch_projects(subscription, logger):
-    try:
-        response = requests.get(subscription, timeout=connection_timeout, verify=False)
-        response.raise_for_status()
-        users = dict()
-        projects = response.json()
-
-        return projects
-
-    except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
-        logger.error('requests error: %s' % e)
-
-        return False
-
-
-def concat(s):
-    if '-' in s:
-        s = s.split('-')
-        s = ''.join(s)
-    if ' ' in s:
-        s = s.split(' ')
-        s = ''.join(s)
-
-    return s
-
-
 def gen_password():
     s = os.urandom(64)
 
     return b64encode(s)[:30]
-
-
-def create_shareddir(dir, uid, gid, logger):
-    try:
-        os.mkdir(dir, 0750)
-        os.chown(dir, uid, gid)
-
-        return True
-
-    except Exception as e:
-        logger.error(e)
-
-        return False
 
 
 def create_homedir(dir, uid, gid, logger):
@@ -113,16 +53,6 @@ def create_homedir(dir, uid, gid, logger):
         logger.error(e)
 
         return False
-
-
-def extract_email(projects, name, surname, last_project):
-    for p in projects:
-        if last_project == p['sifra']:
-            users = p['users']
-            for u in users:
-                if (name == concat(unidecode(u['ime'])) and
-                    surname == concat(unidecode(u['prezime']))):
-                    return u['mail']
 
 
 def main():
@@ -147,43 +77,37 @@ def main():
     session = Session()
 
     usertool = UserUtils(logger)
-    import pdb; pdb.set_trace()
 
-    # fetch projects feed data as it is needed for email extraction
-    projects = fetch_projects(conf_opts['external']['subscription'], logger)
+    if conf_opts['settings']['createhome']:
+        # create /home directories for user
+        not_home = session.query(User).filter(User.ishomecreated is False).all()
+        for u in not_home:
+            if (os.path.exists(u.homedir)):
+                rh = True
+            else:
+                rh = create_homedir(u.homedir, u.uid, u.gid, logger)
+            if rh is True:
+                u.ishomecreated = True
+                logger.info('Created directories for %s' % u.username)
+        session.commit()
 
-    if not projects:
-        logger.error('Could not fetch projects and users')
-        raise SystemExit(1)
+    if conf_opts['settings']['associatesgeproject']:
+        # add users to SGE projects
+        not_sge = session.query(User).filter(User.issgeadded is False).all()
+        for u in not_sge:
+            sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
+            try:
+                os.chdir(os.path.dirname(sgecreateuser_cmd))
+                subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
+                                                           u.username,
+                                                           u.last_project),
+                                      shell=True, bufsize=512)
+                u.issgeadded = True
+                logger.info('User %s added in SGE project %s' % (u.username, u.last_project))
 
-    # create /home directories for user
-    not_home = session.query(User).filter(User.ishomecreated is False).all()
-    for u in not_home:
-        if (os.path.exists(u.homedir)):
-            rh = True
-        else:
-            rh = create_homedir(u.homedir, u.uid, u.gid, logger)
-        if rh is True:
-            u.ishomecreated = True
-            logger.info('Created directories for %s' % u.username)
-    session.commit()
-
-    # add users to SGE projects
-    not_sge = session.query(User).filter(User.issgeadded is False).all()
-    for u in not_sge:
-        sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
-        try:
-            os.chdir(os.path.dirname(sgecreateuser_cmd))
-            subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
-                                                       u.username,
-                                                       u.last_project),
-                                  shell=True, bufsize=512)
-            u.issgeadded = True
-            logger.info('User %s added in SGE project %s' % (u.username, u.last_project))
-
-        except Exception as e:
-            logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
-    session.commit()
+            except Exception as e:
+                logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
+        session.commit()
 
     # set password for opened user accounts
     not_password = session.query(User).filter(User.ispasswordset is False).all()
@@ -202,11 +126,9 @@ def main():
             smtpserver = conf_opts['external']['emailsmtp']
             emailfrom = conf_opts['external']['emailfrom']
             emailsubject = conf_opts['external']['emailsubject']
-            email = extract_email(projects, u.name, u.surname, u.last_project)
-            u.email = email
 
             e = InfoAccOpen(u.username, u.password, templatepath, smtpserver,
-                            emailfrom, email, emailsubject, logger)
+                            emailfrom, u.email, emailsubject, logger)
             r = e.send()
             if r:
                 u.issentemail = True
