@@ -135,13 +135,13 @@ def main():
         if project['sifra'] == targetproject:
             logger.info('Fetched project = %s' % project['sifra'])
             allusersdb = cache['users']
-            usersdb = set([ue.uid - 1000 for ue in allusersdb])
+            usersdb = set([ue['uid'] - 1000 for ue in allusersdb])
             usersfeed = list()
             diff = set()
             usersfeed = set([int(uf['id']) for uf in project['users']])
             diff = usersfeed.difference(usersdb)
 
-            allusernames = set([user.username for user in allusersdb])
+            allusernames = set([user['username'] for user in allusersdb])
             for user in diff:
                 userfeed = filter(lambda u: user == u['id'], project['users'])[0]
                 feedname = concat(unidecode(userfeed['ime']))
@@ -165,7 +165,7 @@ def main():
     if newusers:
         logger.info("New users added into cache: %s" %
                     str_iterable([user['username'] for user in newusers]))
-        cache['users'].append(newusers)
+        cache['users'] = cache['users'] + newusers
         update_cache_json(cachedb, cache, logger)
     else:
         logger.info("Cache up to date")
