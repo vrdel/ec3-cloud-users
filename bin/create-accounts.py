@@ -99,8 +99,10 @@ def main():
             if rh is True:
                 u['ishomecreated'] = True
                 logger.info('Created home directory for %s' % u['username'])
-            if not_home:
-                update(cdb, cache, logger)
+            else:
+                logger.error('Failed creating home directory for %s' % u['username'])
+        if not_home:
+            update(cdb, cache, logger)
 
     if conf_opts['settings']['associatesgeproject']:
         # add users to SGE projects
@@ -136,6 +138,8 @@ def main():
             if r:
                 u['issentemail'] = True
                 logger.info('Mail sent for %s' % u['username'])
+            else:
+                logger.error('Failed mail sent for %s' % u['username'])
         if not_email:
             update(cdb, cache, logger)
 
