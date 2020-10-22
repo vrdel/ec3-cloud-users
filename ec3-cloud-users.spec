@@ -9,10 +9,10 @@
 %define mydist %{dist}
 %endif
 
-Name:           isabella-users-frontend
-Version:        0.1.3
+Name:           ec3-cloud-users
+Version:        0.1.0
 Release:        1%{?mydist}.srce
-Summary:        Scripts for opening user accounts on SRCE Isabella cluster
+Summary:        Scripts for opening user accounts on EC3 spawned clusters on SRCE HTC IaaS Cloud
 Group:          Applications/System
 License:        GPL
 URL:            https://github.com/vrdel/isabella-users
@@ -27,7 +27,7 @@ Requires:       python-requests
 
 
 %description
-Scripts for opening user accounts on SRCE Isabella cluster
+Scripts for opening user accounts on EC3 spawned clusters on SRCE HTC IaaS Cloud
 
 %prep
 %setup -q
@@ -56,22 +56,5 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0755,root,root) %{_libexecdir}/%{name}/*.py*
 
 %changelog
-* Fri May 22 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.3-1%{?dist}
-- updated email template and subject
-* Wed Jul 3 2019 Daniel Vrcic <dvrcic@srce.hr> - 0.1.2-1%{?dist}
-- send utf-8 emails
-- email subject from config
-* Mon Oct 22 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-4%{?dist}
-- email template update with new frontend
-* Fri Oct 19 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-3%{?dist}
-- match new qconf output for project and user exist check
-- update SQLAlchemy dependency for only Centos 7
-* Mon Aug 20 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-2%{?dist}
-- update SGE and cache DB user assignments to last projects
-- no log warning for signoffs
-* Tue Jun 12 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-3%{?dist}
-- added log msgs about done actions
-* Mon Jun 4 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-2%{?dist}
-- Cc mail with opened user accounts
-* Sun Jun 3 2018 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-1%{?dist}
+* Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-1%{?dist}
 - first release
