@@ -27,6 +27,7 @@ def fetch_feeddata(subscription, logger):
 
     except (requests.exceptions.ConnectionError, requests.exceptions.HTTPError) as e:
         logger.error('requests error: %s' % e)
+        raise SystemExit(1)
 
     except Exception as e:
         logger.error(e)
