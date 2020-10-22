@@ -1,25 +1,14 @@
 #!/usr/bin/python
 
-import __main__
-__main__.__requires__ = __requires__ = []
-__requires__.append('SQLAlchemy >= 0.8.2')
-import pkg_resources
-pkg_resources.require(__requires__)
-
 import argparse
 
-from ec3_cloud_users.cachedb import User
+from ec3_cloud_users.cache import load, update
 from ec3_cloud_users.userutils import UserUtils
 from ec3_cloud_users.log import Logger
 from ec3_cloud_users.config import parse_config
 from ec3_cloud_users.msg import InfoAccOpen
 
-from unidecode import unidecode
-
 from base64 import b64encode
-
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 import sys
 import os
@@ -70,17 +59,13 @@ def main():
     if args.sql:
         cdb = args.sql
 
-    engine = create_engine('sqlite:///%s' % cdb, echo=args.verbose)
-
-    Session = sessionmaker()
-    Session.configure(bind=engine)
-    session = Session()
-
     usertool = UserUtils(logger)
+    cache = load(cdb, logger)
 
     allusers_passwd = set(usertool.all_users_list())
-    allusers_db = set([u[0] for u in session.query(User.username).all()])
+    allusers_db = set([u['username'] for u in cache['users']])
     diff = allusers_db.difference(allusers_passwd)
+    import ipdb; ipdb.set_trace()
 
     # create user account (entries in /etc/passwd)
     for user in diff:

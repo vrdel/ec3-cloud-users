@@ -29,6 +29,7 @@ def load(cache, logger):
 
             return emptyusers
         else:
+            logger.error('Error loading cache')
             logger.error(exc)
             raise SystemExit(1)
 
