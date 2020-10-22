@@ -104,38 +104,40 @@ def main():
 
     if conf_opts['settings']['associatesgeproject']:
         # add users to SGE projects
-        not_sge = session.query(User).filter(User.issgeadded == False).all()
+        not_sge = filter(lambda u: u['issgeadded'] == False, cache['users'])
         for u in not_sge:
             sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
             try:
                 os.chdir(os.path.dirname(sgecreateuser_cmd))
                 subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
-                                                           u.username,
-                                                           u.project),
+                                                           u['username'],
+                                                           u['project']),
                                       shell=True, bufsize=512)
-                u.issgeadded = True
-                logger.info('User %s added in SGE project %s' % (u.username, u.project))
+                u['issgeadded'] = True
+                logger.info('User %s added in SGE project %s' % (u['username'], u['project']))
 
             except Exception as e:
-                logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
-        session.commit()
+                logger.error('Failed adding user %s to SGE: %s' % (u['username'], str(e)))
+        if not_sge:
+            update(cdb, cache, logger)
 
     if conf_opts['external']['sendemail']:
         # send email to user whose account is opened
-        not_email = session.query(User).filter(User.issentemail == False).all()
+        not_email = filter(lambda u: u['issentemail'] == False, cache['users'])
         for u in not_email:
             templatepath = conf_opts['external']['emailtemplate']
             smtpserver = conf_opts['external']['emailsmtp']
             emailfrom = conf_opts['external']['emailfrom']
             emailsubject = conf_opts['external']['emailsubject']
 
-            e = InfoAccOpen(u.username, u.password, templatepath, smtpserver,
-                            emailfrom, u.email, emailsubject, logger)
+            e = InfoAccOpen(u['username'], u['password'], templatepath, smtpserver,
+                            emailfrom, u['email'], emailsubject, logger)
             r = e.send()
             if r:
-                u.issentemail = True
-                logger.info('Mail sent for %s' % u.username)
-        session.commit()
+                u['issentemail'] = True
+                logger.info('Mail sent for %s' % u['username'])
+        if not_email:
+            update(cdb, cache, logger)
 
 
 if __name__ == '__main__':
