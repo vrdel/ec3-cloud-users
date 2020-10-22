@@ -90,9 +90,19 @@ def main():
         else:
             logger.error('Problem creating user account for %s' % user)
 
+    # set password for opened user accounts
+    not_password = session.query(User).filter(User.ispasswordset == False).all()
+    for u in not_password:
+        password = gen_password()
+        u.password = password
+        usertool.set_user_pass(usertool.get_user(u.username), password)
+        u.ispasswordset = True
+        logger.info('Set password for %s' % u.username)
+    session.commit()
+
     if conf_opts['settings']['createhome']:
         # create /home directories for user
-        not_home = session.query(User).filter(User.ishomecreated is False).all()
+        not_home = session.query(User).filter(User.ishomecreated == False).all()
         for u in not_home:
             if (os.path.exists(u.homedir)):
                 rh = True
@@ -105,7 +115,7 @@ def main():
 
     if conf_opts['settings']['associatesgeproject']:
         # add users to SGE projects
-        not_sge = session.query(User).filter(User.issgeadded is False).all()
+        not_sge = session.query(User).filter(User.issgeadded == False).all()
         for u in not_sge:
             sgecreateuser_cmd = conf_opts['settings']['sgecreateuser']
             try:
@@ -121,18 +131,10 @@ def main():
                 logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
         session.commit()
 
-    # set password for opened user accounts
-    not_password = session.query(User).filter(User.ispasswordset is False).all()
-    for u in not_password:
-        password = gen_password()
-        u.password = password
-        usertool.set_user_pass(usertool.get_user(u.username), password)
-        u.ispasswordset = True
-    session.commit()
 
     if conf_opts['external']['sendemail']:
         # send email to user whose account is opened
-        not_email = session.query(User).filter(User.issentemail is False).all()
+        not_email = session.query(User).filter(User.issentemail == False).all()
         for u in not_email:
             templatepath = conf_opts['external']['emailtemplate']
             smtpserver = conf_opts['external']['emailsmtp']
