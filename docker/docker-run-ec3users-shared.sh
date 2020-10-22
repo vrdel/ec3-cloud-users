@@ -22,7 +22,5 @@ docker run --privileged --rm -ti \
 -v $HOME/my_work/srce/git.ec3-cloud-users/ec3-cloud-users/modules/:/usr/lib/python2.7/site-packages/ec3_cloud_users:ro \
 -v $HOME/my_work/srce/git.ec3-cloud-users/ec3-cloud-users/bin/create-accounts.py:/usr/libexec/ec3-cloud-users/create-accounts.py:ro \
 -v $HOME/my_work/srce/git.ec3-cloud-users/ec3-cloud-users/bin/sync-feeddb.py:/usr/libexec/ec3-cloud-users/sync-feeddb.py:ro \
--v $HOME/my_work/srce/git.ec3-cloud-users/ec3-cloud-users/bin/setup-db.py:/usr/libexec/ec3-cloud-users/setup-db.py:ro \
--v $HOME/my_work/srce/git.ec3-cloud-users/ec3-cloud-users/bin/update-userdb.py:/usr/libexec/ec3-cloud-users/update-userdb.py:ro \
 --name ec3-cloud-users \
 $IMG /bin/zsh
