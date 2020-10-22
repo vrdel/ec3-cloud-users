@@ -1,19 +1,9 @@
 #!/usr/bin/python
 
-import __main__
-__main__.__requires__ = __requires__ = []
-__requires__.append('SQLAlchemy >= 0.8.2')
-import pkg_resources
-pkg_resources.require(__requires__)
-
-from sqlalchemy import create_engine, and_
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.orm import sessionmaker
-
 from datetime import datetime
 from unidecode import unidecode
 
-from ec3_cloud_users.cachedb import Base, User
+from ec3_cloud_users.cache import load, update
 from ec3_cloud_users.config import parse_config
 from ec3_cloud_users.log import Logger
 
@@ -77,37 +67,6 @@ def str_iterable(s):
     return ', '.join(s)
 
 
-def update_cache_json(cache, newusers, logger):
-    try:
-        with open(cache, mode='w') as fp:
-            json.dump(newusers, fp, indent=4)
-
-    except IOError as exc:
-        logger.error('Error opening cache')
-        logger.error(exc)
-        raise SystemExit(1)
-
-
-def load_cache_json(cache, logger):
-    try:
-        with open(cache, mode='r') as fp:
-            return json.loads(fp.read())
-
-    except IOError as exc:
-        if exc.errno == errno.ENOENT:
-
-            logger.info('Creating %s for first time' % cache)
-            emptyusers = {'users': []}
-
-            with open(cache, mode='w+') as fp:
-                json.dump(emptyusers, fp, indent=4)
-
-            return emptyusers
-        else:
-            logger.error(exc)
-            raise SystemExit(1)
-
-
 def main():
     lobj = Logger(sys.argv[0])
     logger = lobj.get()
@@ -117,18 +76,18 @@ def main():
     newusers = []
 
     parser = argparse.ArgumentParser(description="ec3-cloud-users sync DB")
-    parser.add_argument('-d', required=False, help='SQLite DB file', dest='sql')
+    parser.add_argument('-d', required=False, help='JSON cache file', dest='cache')
     parser.add_argument('-v', required=False, default=False,
                         action='store_true', help='Verbose', dest='verbose')
     args = parser.parse_args()
 
     data = fetch_feeddata(conf_opts['external']['subscription'], logger)
 
-    if args.sql:
-        cachedb = args.sql
+    if args.cache:
+        cachedb = args.cache
 
     # engine = create_engine('sqlite:///%s' % cachedb, echo=args.verbose)
-    cache = load_cache_json(cachedb, logger)
+    cache = load(cachedb, logger)
 
     for project in data:
         # skip projects that have not been accepted yet or are HTC only
@@ -166,7 +125,7 @@ def main():
         logger.info("New users added into cache: %s" %
                     str_iterable([user['username'] for user in newusers]))
         cache['users'] = cache['users'] + newusers
-        update_cache_json(cachedb, cache, logger)
+        update(cachedb, cache, logger)
     else:
         logger.info("Cache up to date")
 
