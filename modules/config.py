@@ -29,6 +29,8 @@ def parse_config(logger=None):
 
                 if section.startswith('settings'):
                     confopts['settings'] = {'gid': config.getint(section, 'gid')}
+                    confopts['settings'].update({'createhome': config.getboolean(section, 'createhome')})
+                    confopts['settings'].update({'associatesgeproject': config.getboolean(section, 'associatesgeproject')})
 
                     skeletonpath = config.get(section, 'skeletonpath')
                     if not skeletonpath.endswith('/'):
