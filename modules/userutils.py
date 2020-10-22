@@ -70,6 +70,13 @@ class UserUtils(object):
                                                              str(e)))
 
 
+    def add_user(self, username, uid, gid):
+        newuser = libuser.admin().initUser(username)
+        newuser[libuser.UIDNUMBER] = long(uid)
+        newuser[libuser.GIDNUMBER] = long(gid)
+        ret = libuser.admin().addUser(newuser, False, True)
+        return ret
+
     def get_user_name(self, userobj):
         return userobj.get(libuser.USERNAME)[0]
 

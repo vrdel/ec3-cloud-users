@@ -78,6 +78,18 @@ def main():
 
     usertool = UserUtils(logger)
 
+    allusers_passwd = set(usertool.all_users_list())
+    allusers_db = set([u[0] for u in session.query(User.username).all()])
+    diff = allusers_db.difference(allusers_passwd)
+
+    for user in diff:
+        userdb = session.query(User).filter(User.username == user).one()
+        iscreated = usertool.add_user(user, userdb.uid, userdb.gid)
+        if iscreated:
+            logger.info('Created user account for %s' % user)
+        else:
+            logger.error('Problem creating user account for %s' % user)
+
     if conf_opts['settings']['createhome']:
         # create /home directories for user
         not_home = session.query(User).filter(User.ishomecreated is False).all()
@@ -88,7 +100,7 @@ def main():
                 rh = create_homedir(u.homedir, u.uid, u.gid, logger)
             if rh is True:
                 u.ishomecreated = True
-                logger.info('Created directories for %s' % u.username)
+                logger.info('Created home directory for %s' % u.username)
         session.commit()
 
     if conf_opts['settings']['associatesgeproject']:
