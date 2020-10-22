@@ -27,7 +27,7 @@ import requests
 import shutil
 import subprocess
 
-connection_timeout = 120
+
 conf_opts = parse_config()
 
 
