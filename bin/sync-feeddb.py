@@ -122,7 +122,7 @@ def main():
                 u = User(
                     username=username,
                     name=feedname, surname=feedsurname, email=feedemail, shell=None,
-                    homedir=None, password=None,
+                    homedir='/home/{}'.format(username), password=None,
                     uid=userfeed['id'] + 1000, gid=100,
                     issubscribe=0, ispasswordset=0, ishomecreated=0,
                     issgeadded=0, issentemail=0,

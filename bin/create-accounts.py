@@ -122,7 +122,7 @@ def main():
                 os.chdir(os.path.dirname(sgecreateuser_cmd))
                 subprocess.check_call('{0} {1} {2}'.format(sgecreateuser_cmd,
                                                            u.username,
-                                                           u.last_project),
+                                                           u.project),
                                       shell=True, bufsize=512)
                 u.issgeadded = True
                 logger.info('User %s added in SGE project %s' % (u.username, u.last_project))
