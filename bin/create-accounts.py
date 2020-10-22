@@ -82,9 +82,12 @@ def main():
     allusers_db = set([u[0] for u in session.query(User.username).all()])
     diff = allusers_db.difference(allusers_passwd)
 
+    # create user account (entries in /etc/passwd)
     for user in diff:
         userdb = session.query(User).filter(User.username == user).one()
-        iscreated = usertool.add_user(user, userdb.uid, userdb.gid)
+        iscreated = usertool.add_user(user, userdb.uid, userdb.gid,
+                                      userdb.name, userdb.surname,
+                                      userdb.project)
         if iscreated:
             logger.info('Created user account for %s' % user)
         else:
@@ -130,7 +133,6 @@ def main():
             except Exception as e:
                 logger.error('Failed adding user %s to SGE: %s' % (u.username, str(e)))
         session.commit()
-
 
     if conf_opts['external']['sendemail']:
         # send email to user whose account is opened

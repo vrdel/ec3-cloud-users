@@ -1,15 +1,14 @@
 import libuser
 
+
 class UserUtils(object):
     def __init__(self, logger, home_prefix='/home'):
         self.logger = logger
         self.home_prefix = home_prefix
 
-
     def get_user(self, username):
         user = libuser.admin().lookupUserByName(username)
         return user
-
 
     def all_users_list(self):
         users = libuser.admin().enumerateUsersFull()
@@ -17,12 +16,10 @@ class UserUtils(object):
         users = [self.get_user_name(u) for u in users]
         return users
 
-
     def all_users(self):
         users = libuser.admin().enumerateUsersFull()
         users = [u for u in users if self.get_user_home(u).startswith('/home')]
         return users
-
 
     def all_projects_users(self):
         projects = dict()
@@ -38,7 +35,6 @@ class UserUtils(object):
                 projects[project].append(self.get_user_name(u))
 
         return projects
-
 
     def info_comment(self, userobj):
         comment = self.get_user_comment(userobj)
@@ -58,7 +54,6 @@ class UserUtils(object):
 
         return name, surname, project
 
-
     def get_user_home(self, userobj):
         try:
             return userobj.get(libuser.HOMEDIRECTORY)[0]
@@ -69,37 +64,34 @@ class UserUtils(object):
                                                              self.get_user_name(userobj),
                                                              str(e)))
 
+    def set_user_comment(self, userobj, name, surname, project):
+        userobj[libuser.GECOS] = '{} {}, {}'.format(name, surname, project)
 
-    def add_user(self, username, uid, gid):
+    def add_user(self, username, uid, gid, name, surname, project):
         newuser = libuser.admin().initUser(username)
         newuser[libuser.UIDNUMBER] = long(uid)
         newuser[libuser.GIDNUMBER] = long(gid)
+        self.set_user_comment(newuser, name, surname, project)
         ret = libuser.admin().addUser(newuser, False, True)
         return ret
 
     def get_user_name(self, userobj):
         return userobj.get(libuser.USERNAME)[0]
 
-
     def get_user_id(self, userobj):
         return userobj.get(libuser.UIDNUMBER)[0]
-
 
     def get_group_id(self, userobj):
         return userobj.get(libuser.GIDNUMBER)[0]
 
-
     def get_user_pass(self, userobj):
         return userobj.get(libuser.SHADOWPASSWORD)[0]
-
 
     def get_user_comment(self, userobj):
         return userobj.get(libuser.GECOS)[0]
 
-
     def set_user_pass(self, userobj, password):
         libuser.admin().setpassUser(userobj, password, False)
-
 
     def get_user_shell(self, userobj):
         return userobj.get(libuser.LOGINSHELL)[0]
