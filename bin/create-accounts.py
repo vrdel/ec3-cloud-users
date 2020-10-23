@@ -131,9 +131,10 @@ def main():
             smtpserver = conf_opts['external']['emailsmtp']
             emailfrom = conf_opts['external']['emailfrom']
             emailsubject = conf_opts['external']['emailsubject']
+            ipaddress = conf_opts['external']['ipaddress']
 
             e = InfoAccOpen(u['username'], u['password'], templatepath, smtpserver,
-                            emailfrom, u['email'], emailsubject, logger)
+                            emailfrom, u['email'], emailsubject, ipaddress, logger)
             r = e.send()
             if r:
                 u['issentemail'] = True

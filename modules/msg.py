@@ -6,9 +6,10 @@ import datetime
 import smtplib
 import socket
 
+
 class InfoAccOpen(object):
     def __init__(self, username, password, templatepath, smtpserver, emailfrom,
-                 emailto, emailsubject, logger):
+                 emailto, emailsubject, ipaddress, logger):
         self.username = username
         self.password = password
         self.templatepath = templatepath
@@ -16,6 +17,7 @@ class InfoAccOpen(object):
         self.emailfrom = emailfrom
         self.emailto = emailto
         self.emailsubject = emailsubject
+        self.ipaddress = ipaddress
         self.logger = logger
 
     def _construct_email(self):
@@ -27,6 +29,7 @@ class InfoAccOpen(object):
             text = ''.join(text)
             text = text.replace('__USERNAME__', self.username)
             text = text.replace('__PASSWORD__', self.password)
+            text = text.replace('__IPADDRESS__', self.ipaddress)
 
             m = MIMEText(text, 'plain', 'utf-8')
             m['From'] = self.emailfrom
