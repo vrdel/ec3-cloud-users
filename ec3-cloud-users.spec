@@ -51,10 +51,10 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{python_sitelib}/%{underscore %{name}}/
 %{python_sitelib}/%{underscore %{name}}/*.py[co]
 %dir %{_localstatedir}/log/%{name}/
-%dir %{_sharedstatedir}/%{name}/
 %attr(0755,root,root) %dir %{_libexecdir}/%{name}
 %attr(0755,root,root) %{_libexecdir}/%{name}/*.py*
 %attr(0644,root,root) %{_sysconfdir}/cron.d/*
+%attr(0700,root,root) %dir %{_sharedstatedir}/%{name}/
 
 %changelog
 * Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-1%{?dist}

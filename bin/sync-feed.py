@@ -113,7 +113,7 @@ def main():
                 u = dict(
                     username=username,
                     name=feedname, surname=feedsurname, email=feedemail, shell=None,
-                    homedir='/{}/{}'.format(homeprefix, username), password=None,
+                    homedir='{}/{}'.format(homeprefix, username), password=None,
                     uid=userfeed['id'] + 1000, gid=100, ispasswordset=False,
                     ishomecreated=False, issgeadded=False, issentemail=False,
                     date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
