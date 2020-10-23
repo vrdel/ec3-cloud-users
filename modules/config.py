@@ -2,7 +2,8 @@ import ConfigParser
 import sys
 import os
 
-conf = '/etc/ec3-cloud-users/frontend.conf'
+conf = '/etc/ec3-cloud-users/config.conf'
+
 
 def parse_config(logger=None):
     confopts = dict()
