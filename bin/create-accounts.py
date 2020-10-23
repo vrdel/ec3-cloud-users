@@ -50,14 +50,14 @@ def main():
 
     cdb = conf_opts['settings']['cache']
 
-    parser = argparse.ArgumentParser(description="ec3-cloud-users update users DB")
-    parser.add_argument('-d', required=False, help='SQLite DB file', dest='sql')
+    parser = argparse.ArgumentParser(description="ec3-cloud-users create accounts listed in json cache")
+    parser.add_argument('-d', required=False, help='JSON cache file', dest='cache')
     parser.add_argument('-v', required=False, default=False,
                         action='store_true', help='Verbose', dest='verbose')
     args = parser.parse_args()
 
-    if args.sql:
-        cdb = args.sql
+    if args.cache:
+        cdb = args.cache
 
     usertool = UserUtils(logger)
     cache = load(cdb, logger)

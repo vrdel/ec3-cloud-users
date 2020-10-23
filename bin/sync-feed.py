@@ -77,7 +77,7 @@ def main():
     homeprefix = conf_opts['settings']['homeprefix']
     newusers = []
 
-    parser = argparse.ArgumentParser(description="ec3-cloud-users sync DB")
+    parser = argparse.ArgumentParser(description="ec3-cloud-users sync json cache with feed data")
     parser.add_argument('-d', required=False, help='JSON cache file', dest='cache')
     parser.add_argument('-v', required=False, default=False,
                         action='store_true', help='Verbose', dest='verbose')
@@ -88,7 +88,6 @@ def main():
     if args.cache:
         cachedb = args.cache
 
-    # engine = create_engine('sqlite:///%s' % cachedb, echo=args.verbose)
     cache = load(cachedb, logger)
 
     for project in data:
