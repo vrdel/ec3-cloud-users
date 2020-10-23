@@ -6,6 +6,18 @@ import datetime
 import smtplib
 import socket
 
+from dns.resolver import Resolver
+from dns.reversename import from_address
+
+
+def get_dnsname(ipaddress):
+    myresolve = Resolver()
+
+    a = from_address(ipaddress)
+    name = myresolve.query(a, 'PTR')[0]
+
+    return str(name)[:-1]
+
 
 class InfoAccOpen(object):
     def __init__(self, username, password, templatepath, smtpserver, emailfrom,
@@ -49,7 +61,9 @@ class InfoAccOpen(object):
 
         else:
             try:
-                s = smtplib.SMTP(self.smtpserver, 25, timeout=120)
+                s = smtplib.SMTP(self.smtpserver, 25,
+                                 local_hostname=get_dnsname(self.ipaddress),
+                                 timeout=120)
                 s.ehlo()
                 s.sendmail(self.emailfrom, [self.emailto, self.emailfrom], email_text)
                 s.quit()
