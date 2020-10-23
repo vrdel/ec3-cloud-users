@@ -33,6 +33,7 @@ def parse_config(logger=None):
                     confopts['settings'].update({'createhome': config.getboolean(section, 'createhome')})
                     confopts['settings'].update({'associatesgeproject': config.getboolean(section, 'associatesgeproject')})
                     confopts['settings'].update({'homeprefix': config.get(section, 'homeprefix')})
+                    confopts['settings'].update({'setpassword': config.getboolean(section, 'setpassword')})
 
                     skeletonpath = config.get(section, 'skeletonpath')
                     if not skeletonpath.endswith('/'):

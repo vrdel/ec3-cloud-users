@@ -77,16 +77,17 @@ def main():
         else:
             logger.error('Problem creating user account for %s' % user)
 
-    # set password for opened user accounts
-    not_password = filter(lambda u: u['ispasswordset'] == False, cache['users'])
-    for u in not_password:
-        password = gen_password()
-        u['password'] = password
-        usertool.set_user_pass(usertool.get_user(u['username']), password)
-        u['ispasswordset'] = True
-        logger.info('Set password for %s' % u['username'])
-    if not_password:
-        update(cdb, cache, logger)
+    if conf_opts['settings']['setpassword']:
+        # set password for opened user accounts
+        not_password = filter(lambda u: u['ispasswordset'] == False, cache['users'])
+        for u in not_password:
+            password = gen_password()
+            u['password'] = password
+            usertool.set_user_pass(usertool.get_user(u['username']), password)
+            u['ispasswordset'] = True
+            logger.info('Set password for %s' % u['username'])
+        if not_password:
+            update(cdb, cache, logger)
 
     if conf_opts['settings']['createhome']:
         # create /home directories for user
