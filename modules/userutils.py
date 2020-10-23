@@ -71,9 +71,19 @@ class UserUtils(object):
         newuser = libuser.admin().initUser(username)
         newuser[libuser.UIDNUMBER] = long(uid)
         newuser[libuser.GIDNUMBER] = long(gid)
-        newuser[libuser.HOMEDIRECTORY] = homedir
+        newuser[libuser.HOMEDIRECTORY] = [homedir]
         self.set_user_comment(newuser, name, surname, project)
-        ret = libuser.admin().addUser(newuser, False, True)
+
+        try:
+            ret = libuser.admin().addUser(newuser, False, True)
+        except RuntimeError as excp:
+            if 'entry already present' in excp.message:
+                # silent about it
+                return None
+            else:
+                self.logger.warning(excp)
+                return False
+
         return ret
 
     def get_user_name(self, userobj):

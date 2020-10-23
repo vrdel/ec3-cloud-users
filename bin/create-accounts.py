@@ -74,8 +74,10 @@ def main():
                                       userdb['homedir'], userdb['project'])
         if iscreated:
             logger.info('Created user account for %s' % user)
-        else:
+        elif iscreated is False:
             logger.error('Problem creating user account for %s' % user)
+        else:
+            pass
 
     if conf_opts['settings']['setpassword']:
         # set password for opened user accounts
