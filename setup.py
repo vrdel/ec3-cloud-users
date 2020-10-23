@@ -24,6 +24,7 @@ setup(name=NAME,
       packages=['ec3_cloud_users'],
       data_files=[('/etc/%s' % NAME, glob.glob('config/*')),
                   ('/usr/libexec/%s' % NAME, ['bin/create-accounts.py',
-                                              'bin/sync-feeddb.py']),
+                                              'bin/sync-feed.py']),
+                  ('/etc/cron.d/', ['cron/ec3-cloud-users']),
                   ('/usr/libexec/%s/sgetools/' % NAME, glob.glob('helpers/sgetools/*')),
                   ])

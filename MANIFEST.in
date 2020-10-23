@@ -2,6 +2,7 @@ include config/*
 include modules/*
 include helpers/sgetools/*
 include bin/*
-include ec3-cloud-users.spec 
+include cron/*
+include ec3-cloud-users.spec
 
 recursive-exclude pymodule *.pyc *.pyo
