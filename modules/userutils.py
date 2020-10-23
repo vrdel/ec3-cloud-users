@@ -67,10 +67,11 @@ class UserUtils(object):
     def set_user_comment(self, userobj, name, surname, project):
         userobj[libuser.GECOS] = '{} {}, {}'.format(name, surname, project)
 
-    def add_user(self, username, uid, gid, name, surname, project):
+    def add_user(self, username, uid, gid, name, surname, homedir, project):
         newuser = libuser.admin().initUser(username)
         newuser[libuser.UIDNUMBER] = long(uid)
         newuser[libuser.GIDNUMBER] = long(gid)
+        newuser[libuser.HOMEDIRECTORY] = homedir
         self.set_user_comment(newuser, name, surname, project)
         ret = libuser.admin().addUser(newuser, False, True)
         return ret

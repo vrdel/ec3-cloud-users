@@ -71,7 +71,7 @@ def main():
         userdb = filter(lambda u: u['username'] == user, cache['users'])[0]
         iscreated = usertool.add_user(user, userdb['uid'], userdb['gid'],
                                       userdb['name'], userdb['surname'],
-                                      userdb['project'])
+                                      userdb['homedir'], userdb['project'])
         if iscreated:
             logger.info('Created user account for %s' % user)
         else:
