@@ -45,7 +45,6 @@ class InfoAccOpen(object):
 
             m = MIMEText(text, 'plain', 'utf-8')
             m['From'] = self.emailfrom
-            m['Cc'] = self.emailfrom
             m['To'] = self.emailto
             m['Subject'] = Header(self.emailsubject, 'utf-8')
 
@@ -65,7 +64,7 @@ class InfoAccOpen(object):
                                  local_hostname=get_dnsname(self.ipaddress),
                                  timeout=120)
                 s.ehlo()
-                s.sendmail(self.emailfrom, [self.emailto, self.emailfrom], email_text)
+                s.sendmail(self.emailfrom, self.emailto, email_text)
                 s.quit()
 
                 return True

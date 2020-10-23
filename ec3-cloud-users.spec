@@ -11,7 +11,7 @@
 
 Name:           ec3-cloud-users
 Version:        0.1.1
-Release:        1%{?mydist}.srce
+Release:        2%{?mydist}.srce
 Summary:        Scripts for opening user accounts on EC3 spawned clusters on SRCE HTC IaaS Cloud
 Group:          Applications/System
 License:        GPL
@@ -57,6 +57,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0700,root,root) %dir %{_sharedstatedir}/%{name}/
 
 %changelog
+* Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-2%{?dist}
+- do not Cc to same From address
 * Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-1%{?dist}
 - DNS resolve to manually set local_hostname for SMTP
 * Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.0-1%{?dist}
