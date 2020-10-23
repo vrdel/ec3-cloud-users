@@ -74,6 +74,7 @@ def main():
 
     cachedb = conf_opts['settings']['cache']
     targetproject = conf_opts['external']['project']
+    homeprefix = conf_opts['settings']['homeprefix']
     newusers = []
 
     parser = argparse.ArgumentParser(description="ec3-cloud-users sync DB")
@@ -112,7 +113,7 @@ def main():
                 u = dict(
                     username=username,
                     name=feedname, surname=feedsurname, email=feedemail, shell=None,
-                    homedir='/home/{}'.format(username), password=None,
+                    homedir='/{}/{}'.format(homeprefix, username), password=None,
                     uid=userfeed['id'] + 1000, gid=100, ispasswordset=False,
                     ishomecreated=False, issgeadded=False, issentemail=False,
                     date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
