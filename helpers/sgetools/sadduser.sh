@@ -1,16 +1,19 @@
 #!/bin/bash
 
+export SGE_ROOT="/opt/sge"
+cd /usr/libexec/isabella-users-frontend/sgetools
+
 # setup default variables
-USER_TEMPLATE="user.template"
-PROJECT_TEMPLATE="project.template"
-ACL_TEMPLATE="acl.template"
+export USER_TEMPLATE="user.template"
+export PROJECT_TEMPLATE="project.template"
+export ACL_TEMPLATE="acl.template"
 
 if [ -z "$SGE_ARCH" ]; then
-    SGE_ARCH=`$SGE_ROOT/util/arch`;
+    export SGE_ARCH=`$SGE_ROOT/util/arch`;
 fi
 
-QCONF="$SGE_ROOT/bin/$SGE_ARCH/qconf"
-SGE_ADMIN_LOG="SGEAdmin.log"
+export QCONF="$SGE_ROOT/bin/$SGE_ARCH/qconf"
+export SGE_ADMIN_LOG="SGEAdmin.log"
 
 if [ $# -lt 2 ]; then
     echo "$0: Usage $0 <userName> <projectName> [<departmentName>]"
@@ -66,10 +69,10 @@ fi
 
 user_exists=`$QCONF -suser $1 2>&1 | grep 'is not known'`
 if [ -n "$user_exists" ]; then
-    # create new user 
+    # create new user
     echo "INFO: Creating new user $1"
     cp -f $USER_TEMPLATE $USER_TEMPLATE.$1
-    sed -i s/"<user>"/$1/ $USER_TEMPLATE.$1 
+    sed -i s/"<user>"/$1/ $USER_TEMPLATE.$1
     sed -i s/"<project>"/$2/ $USER_TEMPLATE.$1
     $QCONF -Auser $USER_TEMPLATE.$1 >> $SGE_ADMIN_LOG 2>&1
     rm -f $USER_TEMPLATE.$1
@@ -91,7 +94,7 @@ fi
     echo "INFO: Adding user $1 to share tree"
     $QCONF -astnode /$2/$1=1 >> $SGE_ADMIN_LOG 2>&1
 #fi
- 
+
 echo "INFO: End adding user $1 / project $2" >> $SGE_ADMIN_LOG
 
 exit 0
