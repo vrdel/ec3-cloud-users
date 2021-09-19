@@ -58,7 +58,7 @@ def main():
     allnames_db = set(['{}{}'.format(u['name'], u['surname']) for u in cache['users']])
 
     with open(args.csvfile) as fp:
-        reader = csv.reader(fp.readlines(), delimiter=',')
+        reader = csv.reader(fp.readlines(), delimiter=';')
         next(reader, None)
         for row in reader:
             name = concat(unidecode(unicode(row[0], 'utf-8')))
