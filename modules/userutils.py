@@ -1,6 +1,26 @@
 import libuser
 
 
+def gen_username(name, surname, existusers):
+    # ASCII convert
+    name = name.lower()
+    surname = surname.lower()
+    # take first char of name and first seven from surname
+    username = name[0] + surname[:7]
+
+    if username not in existusers:
+        return username
+
+    elif username in existusers:
+        match = list()
+        if len(username) < 8:
+            match = filter(lambda u: u.startswith(username), existusers)
+        else:
+            match = filter(lambda u: u.startswith(username[:-1]), existusers)
+
+        return username + str(len(match))
+
+
 class UserUtils(object):
     def __init__(self, logger, home_prefix='/home'):
         self.logger = logger

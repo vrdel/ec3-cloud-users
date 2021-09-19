@@ -6,6 +6,7 @@ from unidecode import unidecode
 from ec3_cloud_users.cache import load, update
 from ec3_cloud_users.config import parse_config
 from ec3_cloud_users.log import Logger
+from ec3_cloud_users.userutils import gen_username
 
 import argparse
 import requests
@@ -31,26 +32,6 @@ def fetch_feeddata(subscription, logger):
 
     except Exception as e:
         logger.error(e)
-
-
-def gen_username(name, surname, existusers):
-    # ASCII convert
-    name = name.lower()
-    surname = surname.lower()
-    # take first char of name and first seven from surname
-    username = name[0] + surname[:7]
-
-    if username not in existusers:
-        return username
-
-    elif username in existusers:
-        match = list()
-        if len(username) < 8:
-            match = filter(lambda u: u.startswith(username), existusers)
-        else:
-            match = filter(lambda u: u.startswith(username[:-1]), existusers)
-
-        return username + str(len(match))
 
 
 def concat(s):
