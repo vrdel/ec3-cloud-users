@@ -5,6 +5,7 @@ import sys
 import os
 import csv
 
+from unidecode import unidecode
 from ec3_cloud_users.log import Logger
 from ec3_cloud_users.cache import load, update
 from ec3_cloud_users.userutils import UserUtils
@@ -22,6 +23,16 @@ def calc_next_uid(list_users):
     else:
         return 2000
 
+
+def concat(s):
+    if '-' in s:
+        s = s.split('-')
+        s = ''.join(s)
+    if ' ' in s:
+        s = s.split(' ')
+        s = ''.join(s)
+
+    return s
 
 def str_iterable(s):
     return ', '.join(s)
@@ -50,22 +61,24 @@ def main():
         reader = csv.reader(fp.readlines(), delimiter=',')
         next(reader, None)
         for row in reader:
-            userkey = '{}{}'.format(row[0], row[1])
+            name = concat(unidecode(unicode(row[0], 'utf-8')))
+            surname = concat(unidecode(unicode(row[1], 'utf-8')))
+            userkey = '{}{}'.format(name, surname)
             if userkey in allnames_db:
                 continue
 
-            username = gen_username(row[0], row[1], allusernames_db)
+            username = gen_username(name, surname, allusernames_db)
             users.update({
                 userkey: {
-                    'name': row[0],
-                    'surname': row[1],
+                    'name': name,
+                    'surname': surname,
                     'email': row[2],
                     'username': username
                 }})
             users.update({
                 username: {
-                    'name': row[0],
-                    'surname': row[1],
+                    'name': name,
+                    'surname': surname,
                     'email': row[2],
                     'username': username
                 }})
@@ -80,14 +93,14 @@ def main():
     newusers = list()
     for user in diff:
         u = dict(
-            username=users[user]['username'],
-            name=users[user]['name'], surname=users[user]['surname'], email=users[user]['email'], shell=None,
+            username=users[user]['username'], name=users[user]['name'],
+            surname=users[user]['surname'],
+            email=users[user]['email'], shell=None,
             homedir='{}/{}'.format(homeprefix, username), password=None,
-            uid=next_uid, gid=100, ispasswordset=False,
-            ishomecreated=False, issgeadded=False, issentemail=False,
+            uid=next_uid, gid=100, ispasswordset=False, ishomecreated=False,
+            issgeadded=False, issentemail=False,
             date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
-            status=1,
-            project=targetproject,
+            status=1, project=targetproject,
         )
         newusers.append(u)
         next_uid += 1
