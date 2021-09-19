@@ -44,14 +44,26 @@ def main():
     next_uid = None
 
     allusernames_db = set([u['username'] for u in cache['users']])
+    allnames_db = set(['{}{}'.format(u['name'], u['surname']) for u in cache['users']])
 
     with open(args.csvfile) as fp:
         reader = csv.reader(fp.readlines(), delimiter=',')
         next(reader, None)
         for row in reader:
+            userkey = '{}{}'.format(row[0], row[1])
+            if userkey in allnames_db:
+                continue
+
             username = gen_username(row[0], row[1], allusernames_db)
             users.update({
-                username : {
+                userkey: {
+                    'name': row[0],
+                    'surname': row[1],
+                    'email': row[2],
+                    'username': username
+                }})
+            users.update({
+                username: {
                     'name': row[0],
                     'surname': row[1],
                     'email': row[2],
@@ -63,10 +75,7 @@ def main():
 
     diff = usernames.difference(allusernames_db)
 
-    if len(allusernames_db) == 0:
-        next_uid = 2000
-    else:
-        next_uid = calc_next_uid(cache['users'])
+    next_uid = calc_next_uid(cache['users'])
 
     newusers = list()
     for user in diff:
