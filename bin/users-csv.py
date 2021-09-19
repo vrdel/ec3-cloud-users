@@ -23,25 +23,45 @@ def main():
     logger = lobj.get()
 
     usertool = UserUtils(logger)
-    users, usernames = list(), set()
+    users, usernames = dict(), set()
     cdb = conf_opts['settings']['cache']
     cache = load(cdb, logger)
+    targetproject = conf_opts['external']['project']
+    homeprefix = conf_opts['settings']['homeprefix']
+
+    allusernames_db = set([u['username'] for u in cache['users']])
 
     with open(args.csvfile) as fp:
         reader = csv.reader(fp.readlines(), delimiter=',')
+        next(reader, None)
         for row in reader:
-            users.append(row)
+            users.update({
+                gen_username(row[0], row[1], allusernames_db): {
+                    'name': row[0],
+                    'surname': row[1],
+                    'email': row[2]
+                }})
 
-    users = users[1:]
-    allusernames_db = set([u['username'] for u in cache['users']])
+    import ipdb; ipdb.set_trace()
 
     for user in users:
-        usernames.update([gen_username(user[0], user[1], allusernames_db)])
+        usernames.update([user['username']])
 
     diff = usernames.difference(allusernames_db)
+    print(diff)
 
-    for users in diff:
-        print(users)
+    # for user in diff:
+        # u = dict(
+            # username=username,
+            # name=feedname, surname=feedsurname, email=feedemail, shell=None,
+            # homedir='{}/{}'.format(homeprefix, username), password=None,
+            # uid=userfeed['id'] + 2000, gid=100, ispasswordset=False,
+            # ishomecreated=False, issgeadded=False, issentemail=False,
+            # date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
+            # status=int(userfeed['status_id']),
+            # project=project['sifra'],
+        # )
+        # newusers.append(u)
 
 
 if __name__ == '__main__':
