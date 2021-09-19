@@ -10,8 +10,21 @@ from ec3_cloud_users.cache import load, update
 from ec3_cloud_users.userutils import UserUtils
 from ec3_cloud_users.config import parse_config
 from ec3_cloud_users.userutils import gen_username
+from datetime import datetime
 
 conf_opts = parse_config()
+
+
+def calc_next_uid(list_users):
+    if len(list_users) > 0:
+        last = [user for user in list_users if user['uid'] > 2000]
+        return last[-1]['uid'] + 1 if len(last) > 0 else 2000
+    else:
+        return 2000
+
+
+def str_iterable(s):
+    return ', '.join(s)
 
 
 def main():
@@ -28,6 +41,7 @@ def main():
     cache = load(cdb, logger)
     targetproject = conf_opts['external']['project']
     homeprefix = conf_opts['settings']['homeprefix']
+    next_uid = None
 
     allusernames_db = set([u['username'] for u in cache['users']])
 
@@ -35,33 +49,47 @@ def main():
         reader = csv.reader(fp.readlines(), delimiter=',')
         next(reader, None)
         for row in reader:
+            username = gen_username(row[0], row[1], allusernames_db)
             users.update({
-                gen_username(row[0], row[1], allusernames_db): {
+                username : {
                     'name': row[0],
                     'surname': row[1],
-                    'email': row[2]
+                    'email': row[2],
+                    'username': username
                 }})
 
-    import ipdb; ipdb.set_trace()
-
     for user in users:
-        usernames.update([user['username']])
+        usernames.update([users[user]['username']])
 
     diff = usernames.difference(allusernames_db)
-    print(diff)
 
-    # for user in diff:
-        # u = dict(
-            # username=username,
-            # name=feedname, surname=feedsurname, email=feedemail, shell=None,
-            # homedir='{}/{}'.format(homeprefix, username), password=None,
-            # uid=userfeed['id'] + 2000, gid=100, ispasswordset=False,
-            # ishomecreated=False, issgeadded=False, issentemail=False,
-            # date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
-            # status=int(userfeed['status_id']),
-            # project=project['sifra'],
-        # )
-        # newusers.append(u)
+    if len(allusernames_db) == 0:
+        next_uid = 2000
+    else:
+        next_uid = calc_next_uid(cache['users'])
+
+    newusers = list()
+    for user in diff:
+        u = dict(
+            username=users[user]['username'],
+            name=users[user]['name'], surname=users[user]['surname'], email=users[user]['email'], shell=None,
+            homedir='{}/{}'.format(homeprefix, username), password=None,
+            uid=next_uid, gid=100, ispasswordset=False,
+            ishomecreated=False, issgeadded=False, issentemail=False,
+            date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
+            status=1,
+            project=targetproject,
+        )
+        newusers.append(u)
+        next_uid += 1
+
+    if newusers:
+        logger.info("New users added into cache: %s" %
+                    str_iterable([user['username'] for user in newusers]))
+        cache['users'] = cache['users'] + newusers
+        update(cdb, cache, logger)
+    else:
+        logger.info("Cache up to date")
 
 
 if __name__ == '__main__':
