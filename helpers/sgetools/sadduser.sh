@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export SGE_ROOT="/opt/sge"
-cd /usr/libexec/isabella-users-frontend/sgetools
+cd /usr/libexec/ec3-cloud-users/
 
 # setup default variables
 export USER_TEMPLATE="user.template"
