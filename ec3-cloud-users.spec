@@ -11,7 +11,7 @@
 
 Name:           ec3-cloud-users
 Version:        0.1.2
-Release:        2%{?mydist}.srce
+Release:        4%{?mydist}.srce
 Summary:        Scripts for opening user accounts on EC3 spawned clusters on SRCE HTC IaaS Cloud
 Group:          Applications/System
 License:        GPL
@@ -57,9 +57,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(0700,root,root) %dir %{_sharedstatedir}/%{name}/
 
 %changelog
-* Sun Sep 19 2021 Daniel Vrcic <dvrcic@srce.hr> - 0.1.2-2%{?dist}
+* Sun Sep 19 2021 Daniel Vrcic <dvrcic@srce.hr> - 0.1.2-4%{?dist}
 - load users from csv
 - fix homedir reference
+- fix SGE path
 * Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-3%{?dist}
 - refined mail template
 * Fri Oct 23 2020 Daniel Vrcic <dvrcic@srce.hr> - 0.1.1-2%{?dist}

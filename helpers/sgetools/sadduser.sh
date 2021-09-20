@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export SGE_ROOT="/opt/sge"
-cd /usr/libexec/ec3-cloud-users/
+cd /usr/libexec/ec3-cloud-users/sgetools/
 
 # setup default variables
 export USER_TEMPLATE="user.template"
