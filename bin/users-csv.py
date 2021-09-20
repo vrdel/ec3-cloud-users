@@ -96,7 +96,7 @@ def main():
             username=users[user]['username'], name=users[user]['name'],
             surname=users[user]['surname'],
             email=users[user]['email'], shell=None,
-            homedir='{}/{}'.format(homeprefix, username), password=None,
+            homedir='{}/{}'.format(homeprefix, users[user]['username']), password=None,
             uid=next_uid, gid=100, ispasswordset=False, ishomecreated=False,
             issgeadded=False, issentemail=False,
             date_created=datetime.now().strftime('%Y-%m-%d %H:%m:%s'),
